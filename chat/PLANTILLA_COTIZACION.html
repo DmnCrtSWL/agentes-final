@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cotización</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0d9488; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { font-size: 24px; font-weight: bold; color: #0d9488; }
+        .company-info { text-align: right; font-size: 14px; color: #666; }
+        .quote-title { text-align: center; font-size: 28px; font-weight: bold; margin-bottom: 20px; color: #111; }
+        .client-info { background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 30px; display: flex; justify-content: space-between; }
+        .info-group { display: flex; flex-direction: column; }
+        .label { font-size: 12px; color: #6b7280; uppercase;letter-spacing: 0.05em; font-weight: 600; margin-bottom: 4px; }
+        .value { font-size: 16px; font-weight: 500; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th { text-align: left; padding: 12px; background-color: #f3f4f6; color: #374151; font-weight: 600; font-size: 14px; border-bottom: 2px solid #e5e7eb; }
+        td { padding: 12px; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        
+        .totals { margin-left: auto; width: 300px; }
+        .total-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+        .total-row.final { border-bottom: none; border-top: 2px solid #0d9488; padding-top: 15px; margin-top: 5px; }
+        .total-label { font-weight: 600; color: #4b5563; }
+        .total-value { font-weight: bold; font-size: 18px; }
+        
+        .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; text-align: center; }
+        .payment-terms { margin-top: 30px; background: #f0fdfa; padding: 15px; border-radius: 6px; border-left: 4px solid #0d9488; color: #0f766e; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">PLAYERAS PRO</div>
+        <div class="company-info">
+            Calle Industria 123, Ciudad<br>
+            Tel: (55) 1234-5678<br>
+            ventas@playeraspro.com
+        </div>
+    </div>
+
+    <div class="quote-title">COTIZACIÓN</div>
+
+    <div class="client-info">
+        <div class="info-group">
+            <span class="label">CLIENTE</span>
+            <span class="value">{{client_name}}</span>
+        </div>
+        <div class="info-group">
+            <span class="label">FECHA</span>
+            <span class="value">{{date}}</span>
+        </div>
+        <div class="info-group">
+            <span class="label">NÚMERO DE ORDEN</span>
+            <span class="value">#{{order_number}}</span>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>DESCRIPCIÓN</th>
+                <th class="text-center">CANTIDAD</th>
+                <th class="text-right">PRECIO UNIT.</th>
+                <th class="text-right">IMPORTE</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each items}}
+            <tr>
+                <td>
+                    <strong>{{model}}</strong><br>
+                    <span style="color: #666; font-size: 12px;">{{details}}</span>
+                </td>
+                <td class="text-center">{{quantity}}</td>
+                <td class="text-right">${{unit_price}}</td>
+                <td class="text-right">${{amount}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <div class="total-row">
+            <span class="total-label">SUBTOTAL:</span>
+            <span>${{subtotal}}</span>
+        </div>
+        {{#if discount}}
+        <div class="total-row" style="color: #0d9488;">
+            <span class="total-label">DESCUENTO ({{discount_rate}}%):</span>
+            <span>-${{discount}}</span>
+        </div>
+        {{/if}}
+        <div class="total-row final">
+            <span class="total-label" style="font-size: 16px;">TOTAL:</span>
+            <span class="total-value">${{total}}</span>
+        </div>
+    </div>
+
+    <div class="payment-terms">
+        <strong>Condiciones de Pago:</strong><br>
+        • 50% de anticipo al realizar el pedido: <strong>${{deposit_amount}}</strong><br>
+        • 50% restante a la entrega: <strong>${{remaining_amount}}</strong>
+    </div>
+
+    <div class="footer">
+        Cotización válida por 15 días. Precios sujetos a cambio sin previo aviso.
+    </div>
+</body>
+</html>
