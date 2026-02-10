@@ -6,6 +6,8 @@ dotenv.config();
 const { Pool } = pg;
 
 // Configuración de la Base de Datos (Neon Postgres)
+console.log("Intentando conectar a DB con URL:", process.env.DATABASE_URL ? "URL encontrada (oculta por seguridad)" : "URL NO ENCONTRADA - Usando localhost");
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
