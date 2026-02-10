@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
+import AppointmentModal from '@/components/AppointmentModal.vue'
 
 interface Appointment {
   id?: number
@@ -8,6 +9,7 @@ interface Appointment {
   fecha: string
   hora: string
   contacto: string
+  metodo: string
   motivo: string
   usuario: string
   status?: string
@@ -16,6 +18,8 @@ interface Appointment {
 const appointments = ref<Appointment[]>([])
 const loading = ref(true)
 const error = ref('')
+const isModalOpen = ref(false)
+const selectedAppointment = ref<Appointment | null>(null)
 
 const fetchAppointments = async () => {
   try {
@@ -39,6 +43,7 @@ const fetchAppointments = async () => {
         fecha: fechaStr,
         hora: cita.time || '',
         contacto: cita.phone || cita.email || 'Sin contacto',
+        metodo: cita.contact || 'Desconocido',
         motivo: cita.reason || 'Sin motivo',
         usuario: cita.user || 'Sistema', 
         status: cita.status
@@ -57,7 +62,17 @@ onMounted(() => {
 })
 
 const handleView = (appointment: Appointment) => {
-  console.log('View appointment:', appointment)
+  selectedAppointment.value = appointment
+  isModalOpen.value = true
+}
+
+const handleCloseModal = () => {
+    isModalOpen.value = false
+    selectedAppointment.value = null
+}
+
+const handleRefresh = () => {
+    fetchAppointments()
 }
 
 const handleCancel = async (appointment: Appointment) => {
@@ -141,7 +156,7 @@ const handleCancel = async (appointment: Appointment) => {
           </div>
 
           <div class="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-            <p class="text-black dark:text-white">{{ appointment.contacto }}</p>
+            <p class="text-black dark:text-white">{{ appointment.metodo }}</p>
           </div>
 
           <div class="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
@@ -207,5 +222,11 @@ const handleCancel = async (appointment: Appointment) => {
         </div>
       </div>
     </div>
+    <AppointmentModal
+        :isOpen="isModalOpen"
+        :appointment="selectedAppointment"
+        @close="handleCloseModal"
+        @refresh="handleRefresh"
+    />
   </DefaultLayout>
 </template>
