@@ -1,0 +1,25 @@
+{
+  "name": "agentes-server",
+  "version": "1.0.0",
+  "description": "Backend server for medical appointments system",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js",
+    "start": "node index.js",
+    "setup-db": "node setup-db.js"
+  },
+  "keywords": [
+    "medical",
+    "appointments",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "pg": "^8.17.1"
+  }
+}
