@@ -20,7 +20,7 @@ const error = ref('')
 const fetchAppointments = async () => {
   try {
     loading.value = true
-    const response = await fetch('http://localhost:3000/api/cancelaciones')
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/cancelaciones`)
     if (!response.ok) throw new Error('Error al cargar citas canceladas')
     
     const data = await response.json()

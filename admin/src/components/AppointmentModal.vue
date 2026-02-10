@@ -70,7 +70,7 @@ const handleSave = async () => {
   if (!props.appointment?.id) return
 
   try {
-    const response = await fetch(`http://localhost:3000/api/citas/${props.appointment.id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/citas/${props.appointment.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -98,7 +98,7 @@ const handleCancelAppointment = async () => {
   if (!confirm('Esta por Cancelar una cita, este proceso no es reversible. OK y Cancelar.')) return
 
   try {
-    const response = await fetch(`http://localhost:3000/api/citas/${props.appointment.id}/status`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/citas/${props.appointment.id}/status`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'

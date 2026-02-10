@@ -24,7 +24,7 @@ const selectedAppointment = ref<Appointment | null>(null)
 const fetchAppointments = async () => {
   try {
     loading.value = true
-    const response = await fetch('http://localhost:3000/api/citas')
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/citas`)
     if (!response.ok) throw new Error('Error al cargar citas')
     
     const data = await response.json()
@@ -79,7 +79,7 @@ const handleCancel = async (appointment: Appointment) => {
   if (!confirm(`¿Estás seguro de cancelar la cita de ${appointment.nombre}?`)) return
 
   try {
-    const response = await fetch(`http://localhost:3000/api/citas/${appointment.id}/status`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/citas/${appointment.id}/status`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
