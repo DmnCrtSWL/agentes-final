@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import appointmentsRouter from './routes/appointments.js';
 import quotesRouter from './routes/quotes.js';
+import n8nProxyRouter from './routes/n8n-proxy.js';
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 const allowedOrigins = [
   'http://localhost:5173', 
+  'http://localhost:5174',
   'https://agentes-final-administrador.vercel.app'
 ];
 
@@ -43,7 +45,8 @@ app.get('/', (req, res) => {
         endpoints: {
             appointments: '/api/citas',
             cancelations: '/api/cancelaciones',
-            quotes: '/api/cotizaciones'
+            quotes: '/api/cotizaciones',
+            n8nProxy: '/api/n8n/*'
         }
     });
 });
@@ -55,6 +58,7 @@ app.get('/api', (req, res) => {
 // API Routes
 app.use('/api', appointmentsRouter);
 app.use('/api', quotesRouter);
+app.use('/api', n8nProxyRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

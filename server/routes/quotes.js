@@ -6,42 +6,25 @@ const router = express.Router();
 // Ruta: Obtener cotizaciones activas
 router.get("/cotizaciones", async (req, res) => {
   try {
-    // Por ahora, usamos datos de prueba ya que la tabla cotizaciones no existe
-    // TODO: Crear tabla cotizaciones en la base de datos
-    const mockData = [
-      {
-        id: 1,
-        paciente: "María González",
-        procedimiento: "Ortodoncia Completa",
-        fecha: "2026-02-15",
-        monto: 15000,
-        status: "active"
-      },
-      {
-        id: 2,
-        paciente: "Juan Pérez",
-        procedimiento: "Implante Dental",
-        fecha: "2026-02-18",
-        monto: 25000,
-        status: "active"
-      },
-      {
-        id: 3,
-        paciente: "Ana Martínez",
-        procedimiento: "Blanqueamiento Dental",
-        fecha: "2026-02-20",
-        monto: 3500,
-        status: "active"
-      }
-    ];
-
-    res.json(mockData);
+    const result = await pool.query(
+      "SELECT * FROM quotes WHERE deleted_at IS NULL ORDER BY date ASC"
+    );
     
-    // Cuando la tabla exista, usar:
-    // const result = await pool.query(
-    //   "SELECT * FROM cotizaciones WHERE status = 'active' ORDER BY fecha ASC"
-    // );
-    // res.json(result.rows);
+    // Map database fields to frontend expected fields
+    const quotes = result.rows.map(row => ({
+      id: row.id,
+      paciente: row.name,
+      procedimiento: row.procedure,
+      fecha: row.date,
+      monto: parseFloat(row.amount),
+      description: row.description,
+      pdf_file: row.pdf_file,
+      status: row.deleted_at ? 'deleted' : 'active',
+      created_at: row.created_at,
+      edited_at: row.edited_at
+    }));
+
+    res.json(quotes);
   } catch (err) {
     console.error("Error ejecutando query:", err);
     res
@@ -55,18 +38,30 @@ router.get("/cotizaciones/:id", async (req, res) => {
   const { id } = req.params;
   
   try {
-    // Mock data
-    const mockData = {
-      id: parseInt(id),
-      paciente: "María González",
-      procedimiento: "Ortodoncia Completa",
-      fecha: "2026-02-15",
-      monto: 15000,
-      status: "active",
-      detalles: "Ortodoncia completa con brackets metálicos"
+    const result = await pool.query(
+      "SELECT * FROM quotes WHERE id = $1 AND deleted_at IS NULL",
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Cotización no encontrada" });
+    }
+
+    const row = result.rows[0];
+    const quote = {
+      id: row.id,
+      paciente: row.name,
+      procedimiento: row.procedure,
+      fecha: row.date,
+      monto: parseFloat(row.amount),
+      description: row.description,
+      pdf_file: row.pdf_file,
+      status: row.deleted_at ? 'deleted' : 'active',
+      created_at: row.created_at,
+      edited_at: row.edited_at
     };
 
-    res.json(mockData);
+    res.json(quote);
   } catch (err) {
     console.error("Error ejecutando query:", err);
     res.status(500).json({ error: "Error al obtener la cotización" });
@@ -75,29 +70,37 @@ router.get("/cotizaciones/:id", async (req, res) => {
 
 // Ruta: Crear nueva cotización
 router.post("/cotizaciones", async (req, res) => {
-  const { paciente, procedimiento, fecha, monto } = req.body;
+  const { paciente, procedimiento, fecha, monto, description, pdf_file } = req.body;
+
+  // Validate required fields
+  if (!paciente || !procedimiento || !fecha || !monto) {
+    return res.status(400).json({ 
+      error: "Campos requeridos: paciente, procedimiento, fecha, monto" 
+    });
+  }
 
   try {
-    // Mock response
+    const result = await pool.query(
+      `INSERT INTO quotes (name, procedure, amount, date, description, pdf_file) 
+       VALUES ($1, $2, $3, $4, $5, $6) 
+       RETURNING *`,
+      [paciente, procedimiento, monto, fecha, description || null, pdf_file || null]
+    );
+
+    const row = result.rows[0];
     const newQuote = {
-      id: Date.now(),
-      paciente,
-      procedimiento,
-      fecha,
-      monto,
-      status: "active"
+      id: row.id,
+      paciente: row.name,
+      procedimiento: row.procedure,
+      fecha: row.date,
+      monto: parseFloat(row.amount),
+      description: row.description,
+      pdf_file: row.pdf_file,
+      status: 'active',
+      created_at: row.created_at
     };
 
     res.status(201).json(newQuote);
-    
-    // Cuando la tabla exista, usar:
-    // const result = await pool.query(
-    //   `INSERT INTO cotizaciones (paciente, procedimiento, fecha, monto, status) 
-    //    VALUES ($1, $2, $3, $4, 'active') 
-    //    RETURNING *`,
-    //   [paciente, procedimiento, fecha, monto]
-    // );
-    // res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error("Error creando cotización:", err);
     res.status(500).json({ error: "Error al crear la cotización" });
@@ -107,17 +110,64 @@ router.post("/cotizaciones", async (req, res) => {
 // Ruta: Actualizar cotización
 router.put("/cotizaciones/:id", async (req, res) => {
   const { id } = req.params;
-  const { paciente, procedimiento, fecha, monto } = req.body;
+  const { paciente, procedimiento, fecha, monto, description, pdf_file } = req.body;
 
   try {
-    // Mock response
+    let queryText = "UPDATE quotes SET edited_at = NOW()";
+    let queryParams = [];
+    let paramCount = 1;
+
+    if (paciente) {
+      queryText += `, name = $${paramCount}`;
+      queryParams.push(paciente);
+      paramCount++;
+    }
+    if (procedimiento) {
+      queryText += `, procedure = $${paramCount}`;
+      queryParams.push(procedimiento);
+      paramCount++;
+    }
+    if (fecha) {
+      queryText += `, date = $${paramCount}`;
+      queryParams.push(fecha);
+      paramCount++;
+    }
+    if (monto !== undefined) {
+      queryText += `, amount = $${paramCount}`;
+      queryParams.push(monto);
+      paramCount++;
+    }
+    if (description !== undefined) {
+      queryText += `, description = $${paramCount}`;
+      queryParams.push(description);
+      paramCount++;
+    }
+    if (pdf_file !== undefined) {
+      queryText += `, pdf_file = $${paramCount}`;
+      queryParams.push(pdf_file);
+      paramCount++;
+    }
+
+    queryText += ` WHERE id = $${paramCount} AND deleted_at IS NULL RETURNING *`;
+    queryParams.push(id);
+
+    const result = await pool.query(queryText, queryParams);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Cotización no encontrada" });
+    }
+
+    const row = result.rows[0];
     const updatedQuote = {
-      id: parseInt(id),
-      paciente,
-      procedimiento,
-      fecha,
-      monto,
-      status: "active"
+      id: row.id,
+      paciente: row.name,
+      procedimiento: row.procedure,
+      fecha: row.date,
+      monto: parseFloat(row.amount),
+      description: row.description,
+      pdf_file: row.pdf_file,
+      status: 'active',
+      edited_at: row.edited_at
     };
 
     res.json(updatedQuote);
@@ -127,25 +177,21 @@ router.put("/cotizaciones/:id", async (req, res) => {
   }
 });
 
-// Ruta: Eliminar cotización
+// Ruta: Eliminar cotización (soft delete)
 router.delete("/cotizaciones/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Mock response
-    res.json({ message: "Cotización eliminada exitosamente", id: parseInt(id) });
+    const result = await pool.query(
+      "UPDATE quotes SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING *",
+      [id]
+    );
     
-    // Cuando la tabla exista, usar:
-    // const result = await pool.query(
-    //   "DELETE FROM cotizaciones WHERE id = $1 RETURNING *",
-    //   [id]
-    // );
-    // 
-    // if (result.rows.length === 0) {
-    //   return res.status(404).json({ error: "Cotización no encontrada" });
-    // }
-    // 
-    // res.json({ message: "Cotización eliminada", data: result.rows[0] });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Cotización no encontrada" });
+    }
+    
+    res.json({ message: "Cotización eliminada", id: parseInt(id) });
   } catch (err) {
     console.error("Error eliminando cotización:", err);
     res.status(500).json({ error: "Error al eliminar la cotización" });

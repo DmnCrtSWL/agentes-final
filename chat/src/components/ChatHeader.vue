@@ -5,21 +5,7 @@ import { ref } from "vue";
 const emit = defineEmits(["selectAgent"]);
 const showMenu = ref(false);
 
-const toggleMenu = () => {
-  showMenu.value = !showMenu.value;
-};
-
-const selectAgent = (agentId) => {
-  emit("selectAgent", agentId);
-  showMenu.value = false;
-};
-
-const handleCotizaciones = () => {
-  alert("Sección en desarrollo");
-  showMenu.value = false;
-};
-
-defineProps({
+const props = defineProps({
   contactName: {
     type: String,
     default: "Agente Uno",
@@ -32,7 +18,25 @@ defineProps({
     type: String,
     default: "https://i.pravatar.cc/150?u=agente-uno",
   },
+  activeAgentId: {
+    type: Number,
+    default: 1,
+  },
 });
+
+const toggleMenu = () => {
+  showMenu.value = !showMenu.value;
+};
+
+const handleCotizaciones = () => {
+  emit("selectAgent", "cotizaciones");
+  showMenu.value = false;
+};
+
+const handleCitas = () => {
+  emit("selectAgent", "servicio-cliente");
+  showMenu.value = false;
+};
 </script>
 
 <template>
@@ -44,7 +48,14 @@ defineProps({
 
       <!-- Dropdown Menu -->
       <div v-if="showMenu" class="agent-menu">
-        <div class="menu-item" @click="handleCotizaciones">Cotizaciones</div>
+        <!-- Si estamos con Jessica (id=4), mostrar opción para volver a Citas -->
+        <template v-if="activeAgentId === 4">
+          <div class="menu-item" @click="handleCitas">Citas</div>
+        </template>
+        <!-- Si estamos con Ana (id=1), mostrar opción para ir a Cotizaciones -->
+        <template v-else>
+          <div class="menu-item" @click="handleCotizaciones">Cotizaciones</div>
+        </template>
       </div>
 
       <div class="avatar-container">

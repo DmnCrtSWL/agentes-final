@@ -53,10 +53,10 @@ const N8N_WEBHOOK_SERVICE_URL =
   import.meta.env.VITE_N8N_WEBHOOK_URL ||
   (import.meta.env.DEV ? N8N_TEST_URL : N8N_PROD_URL);
 
-// Webhook para Cotizaciones (Jessica) - Redirigido al mismo flujo principal por ahora
+// Webhook para Cotizaciones (Jessica) - Producción con CORS configurado
 const N8N_WEBHOOK_QUOTES_URL =
   import.meta.env.VITE_N8N_WEBHOOK_QUOTES_URL ||
-  "https://dmncrt.app.n8n.cloud/webhook/chat/asistente";
+  "https://dmncrt.app.n8n.cloud/webhook/chat/cotizaciones";
 
 console.log("🔗 N8N Service URL:", N8N_WEBHOOK_SERVICE_URL);
 console.log("🔗 N8N Quotes URL:", N8N_WEBHOOK_QUOTES_URL);
@@ -323,6 +323,7 @@ const handleSendMessage = async (text, files = []) => {
         :contact-name="activeAgent.name"
         :status="'En línea'"
         :avatar-url="activeAgent.avatar"
+        :active-agent-id="activeAgentId"
         @selectAgent="handleSelectAgent"
       />
 
