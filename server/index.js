@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import appointmentsRouter from './routes/appointments.js';
+import quotesRouter from './routes/quotes.js';
 
 dotenv.config();
 
@@ -41,7 +42,8 @@ app.get('/', (req, res) => {
         version: '1.0.0',
         endpoints: {
             appointments: '/api/citas',
-            cancelations: '/api/cancelaciones'
+            cancelations: '/api/cancelaciones',
+            quotes: '/api/cotizaciones'
         }
     });
 });
@@ -52,6 +54,7 @@ app.get('/api', (req, res) => {
 
 // API Routes
 app.use('/api', appointmentsRouter);
+app.use('/api', quotesRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

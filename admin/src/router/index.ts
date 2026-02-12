@@ -7,6 +7,7 @@ import BasicChartView from '@/views/Charts/BasicChartView.vue'
 import StatsView from '@/views/Dashboard/StatsView.vue'
 import ActiveAppointmentsView from '@/views/Appointments/ActiveAppointmentsView.vue'
 import CancelledAppointmentsView from '@/views/Appointments/CancelledAppointmentsView.vue'
+import ActiveQuotesView from '@/views/Quotes/ActiveQuotesView.vue'
 import FormElementsView from '@/views/Forms/FormElementsView.vue'
 import FormLayoutView from '@/views/Forms/FormLayoutView.vue'
 import SettingsView from '@/views/Pages/SettingsView.vue'
@@ -38,6 +39,14 @@ const routes = [
     component: CancelledAppointmentsView,
     meta: {
       title: 'Citas Canceladas'
+    }
+  },
+  {
+    path: '/cotizaciones/activas',
+    name: 'cotizacionesActivas',
+    component: ActiveQuotesView,
+    meta: {
+      title: 'Cotizaciones Activas'
     }
   },
   {
