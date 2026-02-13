@@ -1,8 +1,8 @@
 <script setup>
-import { Menu } from "lucide-vue-next";
+import { Menu, RotateCcw } from "lucide-vue-next";
 import { ref } from "vue";
 
-const emit = defineEmits(["selectAgent"]);
+const emit = defineEmits(["selectAgent", "resetConversation"]);
 const showMenu = ref(false);
 
 const props = defineProps({
@@ -37,6 +37,13 @@ const handleCitas = () => {
   emit("selectAgent", "servicio-cliente");
   showMenu.value = false;
 };
+
+const handleResetConversation = () => {
+  if (confirm("¿Estás seguro de que quieres iniciar una nueva conversación? Se perderá el historial actual.")) {
+    emit("resetConversation");
+    showMenu.value = false;
+  }
+};
 </script>
 
 <template>
@@ -56,6 +63,11 @@ const handleCitas = () => {
         <template v-else>
           <div class="menu-item" @click="handleCotizaciones">Cotizaciones</div>
         </template>
+        <div class="menu-divider"></div>
+        <div class="menu-item" @click="handleResetConversation">
+          <RotateCcw :size="16" style="margin-right: 8px; display: inline-block; vertical-align: middle;" />
+          Nueva Conversación
+        </div>
       </div>
 
       <div class="avatar-container">
@@ -68,7 +80,9 @@ const handleCitas = () => {
     </div>
 
     <div class="right-section">
-      <!-- Icons removed -->
+      <button class="icon-btn" @click="handleResetConversation" title="Nueva Conversación">
+        <RotateCcw :size="20" />
+      </button>
     </div>
   </header>
 </template>
@@ -184,5 +198,11 @@ const handleCitas = () => {
 
 .menu-item:hover {
   background-color: #f0f0f0;
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 4px 0;
 }
 </style>

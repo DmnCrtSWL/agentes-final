@@ -7,21 +7,24 @@ const router = express.Router();
 router.get("/cotizaciones", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM quotes WHERE deleted_at IS NULL ORDER BY date ASC"
+      `SELECT id, name, procedure, amount, date, description, pdf_file, email, created_at, edited_at
+       FROM quotes 
+       WHERE deleted_at IS NULL 
+       ORDER BY created_at DESC`
     );
     
-    // Map database fields to frontend expected fields
+    // Mapear campos de inglés a español
     const quotes = result.rows.map(row => ({
       id: row.id,
       paciente: row.name,
       procedimiento: row.procedure,
+      monto: parseFloat(row.amount), // Keep parseFloat for amount
       fecha: row.date,
-      monto: parseFloat(row.amount),
-      description: row.description,
-      pdf_file: row.pdf_file,
-      status: row.deleted_at ? 'deleted' : 'active',
-      created_at: row.created_at,
-      edited_at: row.edited_at
+      descripcion: row.description,
+      pdfFile: row.pdf_file,
+      email: row.email,
+      createdAt: row.created_at,
+      editedAt: row.edited_at
     }));
 
     res.json(quotes);
@@ -54,11 +57,11 @@ router.get("/cotizaciones/:id", async (req, res) => {
       procedimiento: row.procedure,
       fecha: row.date,
       monto: parseFloat(row.amount),
-      description: row.description,
-      pdf_file: row.pdf_file,
-      status: row.deleted_at ? 'deleted' : 'active',
-      created_at: row.created_at,
-      edited_at: row.edited_at
+      descripcion: row.description,
+      pdfFile: row.pdf_file,
+      email: row.email,
+      createdAt: row.created_at,
+      editedAt: row.edited_at
     };
 
     res.json(quote);
@@ -70,7 +73,7 @@ router.get("/cotizaciones/:id", async (req, res) => {
 
 // Ruta: Crear nueva cotización
 router.post("/cotizaciones", async (req, res) => {
-  const { paciente, procedimiento, fecha, monto, description, pdf_file } = req.body;
+  const { paciente, procedimiento, fecha, monto, description, pdf_file, email } = req.body;
 
   // Validate required fields
   if (!paciente || !procedimiento || !fecha || !monto) {
@@ -81,10 +84,10 @@ router.post("/cotizaciones", async (req, res) => {
 
   try {
     const result = await pool.query(
-      `INSERT INTO quotes (name, procedure, amount, date, description, pdf_file) 
-       VALUES ($1, $2, $3, $4, $5, $6) 
+      `INSERT INTO quotes (name, procedure, amount, date, description, pdf_file, email) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) 
        RETURNING *`,
-      [paciente, procedimiento, monto, fecha, description || null, pdf_file || null]
+      [paciente, procedimiento, monto, fecha, description || null, pdf_file || null, email || null]
     );
 
     const row = result.rows[0];
@@ -94,10 +97,10 @@ router.post("/cotizaciones", async (req, res) => {
       procedimiento: row.procedure,
       fecha: row.date,
       monto: parseFloat(row.amount),
-      description: row.description,
-      pdf_file: row.pdf_file,
-      status: 'active',
-      created_at: row.created_at
+      descripcion: row.description,
+      pdfFile: row.pdf_file,
+      email: row.email,
+      createdAt: row.created_at
     };
 
     res.status(201).json(newQuote);
@@ -110,7 +113,7 @@ router.post("/cotizaciones", async (req, res) => {
 // Ruta: Actualizar cotización
 router.put("/cotizaciones/:id", async (req, res) => {
   const { id } = req.params;
-  const { paciente, procedimiento, fecha, monto, description, pdf_file } = req.body;
+  const { paciente, procedimiento, fecha, monto, description, pdf_file, email } = req.body;
 
   try {
     let queryText = "UPDATE quotes SET edited_at = NOW()";
@@ -147,6 +150,11 @@ router.put("/cotizaciones/:id", async (req, res) => {
       queryParams.push(pdf_file);
       paramCount++;
     }
+    if (email !== undefined) {
+      queryText += `, email = $${paramCount}`;
+      queryParams.push(email);
+      paramCount++;
+    }
 
     queryText += ` WHERE id = $${paramCount} AND deleted_at IS NULL RETURNING *`;
     queryParams.push(id);
@@ -164,10 +172,10 @@ router.put("/cotizaciones/:id", async (req, res) => {
       procedimiento: row.procedure,
       fecha: row.date,
       monto: parseFloat(row.amount),
-      description: row.description,
-      pdf_file: row.pdf_file,
-      status: 'active',
-      edited_at: row.edited_at
+      descripcion: row.description,
+      pdfFile: row.pdf_file,
+      email: row.email,
+      editedAt: row.edited_at
     };
 
     res.json(updatedQuote);

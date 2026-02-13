@@ -153,6 +153,20 @@ const handleSelectAgent = async (id) => {
   }
 };
 
+const handleResetConversation = () => {
+  // Generar nuevo sessionId
+  const newSessionId = "session-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem("chat_session_id", newSessionId);
+  sessionId.value = newSessionId;
+  
+  // Limpiar mensajes de todos los agentes
+  Object.keys(agents.value).forEach(key => {
+    agents.value[key].messages = [];
+  });
+  
+  console.log("🔄 Nueva conversación iniciada. SessionId:", newSessionId);
+};
+
 const sendMessageToN8N = async (text, agentId, files = []) => {
   try {
     // Convert files to base64
@@ -325,6 +339,7 @@ const handleSendMessage = async (text, files = []) => {
         :avatar-url="activeAgent.avatar"
         :active-agent-id="activeAgentId"
         @selectAgent="handleSelectAgent"
+        @resetConversation="handleResetConversation"
       />
 
       <MessageList :messages="activeAgent.messages" />
