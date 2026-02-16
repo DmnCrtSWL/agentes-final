@@ -56,7 +56,7 @@ app.get('/api', (req, res) => {
 });
 
 // API Routes
-app.use('/api', appointmentsRouter);
+app.use('/api/appointments', appointmentsRouter);
 app.use('/api', quotesRouter);
 app.use('/api', n8nProxyRouter);
 
